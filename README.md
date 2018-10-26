@@ -22,7 +22,7 @@ This will place a hidden folder in the root/home directory called .virtualenvs
 
 Now we're ready to create our first virtual environment
 ```
-cd ,virtualenvs && python3 -m venv whatever_you_want_to_name_the_project
+cd .virtualenvs && python3 -m venv whatever_you_want_to_name_the_project
 ```
 Now we're ready to change into the virtualenv
 ```
