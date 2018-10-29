@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-
-import requests, json, os, sys, re
+import requests, json, os, sys, re, socket, time
 from datetime import datetime
+from pandas.io.json import json_normalize
 
 def main():
     cbdefense_getevents()
 
 def cbdefense_getevents():
     headers = { 'X-Auth-Token' : os.environ['CBDEFENSE_API'] }
-    r = requests.get("https://api-prod05.conferdeploy.net/integrationServices/v3/event?searchWindow=1d&start=1&rows=1000",headers=headers)
+    r = requests.get("https://api-prod05.conferdeploy.net/integrationServices/v3/event?searchWindow=3h&start=1&rows=2",headers=headers)
     data = r.json()
     if r.status_code == requests.codes.ok:
         for each in data['results']:
@@ -19,14 +19,21 @@ def cbdefense_getevents():
                         if re.search(each['eventId'], text):
                             fi.close()
                         else:
-                            fi.write('[%s] [%s] [%s] \r' % (each['longDescription'], each['eventId'], each['netFlow']['peerFqdn']))
-                            fi.close()
+                            for eventdetails in ['eventId']:
+                                event_url="https://api-prod05.conferdeploy.net/integrationServices/v3/event/" + each['eventId']
+                                r = requests.get(event_url, headers=headers)
+                                resp = r.content
+                                if r.status_code == requests.codes.ok:
+                                    jj = json.loads(resp)
+                                    j = json.dumps(jj)#.replace('\\n','').replace('\\"','"')
+                                    fi.write(j + '\r')
+                                    fi.close()
+                                else:
+                                    pass
                 else:
                     pass
             else:
-                f = open("carbonblack.log", "a+")
-                f.write ('No blocked events as of %s \r' % (datetime.now()))
-                f.close()
+                pass
     else:
         print("oh no, it failed")
 
